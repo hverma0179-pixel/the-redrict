@@ -31,7 +31,7 @@ app.use(
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin && env.NODE_ENV !== 'production') {
+      if (!origin) {
         callback(null, true);
         return;
       }
