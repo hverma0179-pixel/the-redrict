@@ -6,6 +6,7 @@ import hpp from 'hpp';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { env } from './config/env.js';
+import { dbState } from './config/db.js';
 import analyzeRoutes from './routes/analyze.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import historyRoutes from './routes/history.routes.js';
@@ -67,7 +68,13 @@ app.use(hpp());
 app.use(globalLimiter);
 
 app.get('/api/health', (_req, res) => {
-  res.json({ data: { status: 'ok', service: 'url-redirect-analyzer' } });
+  res.json({
+    data: {
+      status: 'ok',
+      service: 'url-redirect-analyzer',
+      database: dbState.connected ? 'connected' : 'not_configured'
+    }
+  });
 });
 
 app.use('/api/auth', authRoutes);
