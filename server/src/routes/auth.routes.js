@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import validator from 'validator';
 import { env } from '../config/env.js';
+import { dbState } from '../config/db.js';
 import { authLimiter } from '../middleware/rateLimiters.js';
 import { requireAuth } from '../middleware/auth.js';
 import { User } from '../models/User.js';
@@ -27,6 +28,10 @@ router.post(
   '/register',
   authLimiter,
   asyncHandler(async (req, res) => {
+    if (!dbState.connected) {
+      throw new AppError('Database is not configured. Login and history are unavailable.', 503, 'DATABASE_UNAVAILABLE');
+    }
+
     const name = validator.escape(String(req.body?.name || 'Analyzer User').trim()).slice(0, 80);
     const email = normalizeEmail(req.body?.email);
     const password = String(req.body?.password || '');
@@ -51,6 +56,10 @@ router.post(
   '/login',
   authLimiter,
   asyncHandler(async (req, res) => {
+    if (!dbState.connected) {
+      throw new AppError('Database is not configured. Login and history are unavailable.', 503, 'DATABASE_UNAVAILABLE');
+    }
+
     const email = normalizeEmail(req.body?.email);
     const password = String(req.body?.password || '');
 
