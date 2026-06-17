@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
+import { dbState } from '../config/db.js';
 import { User } from '../models/User.js';
 import { AppError } from '../utils/AppError.js';
 
@@ -9,6 +10,10 @@ async function attachUserFromToken(req) {
 
   if (!token) {
     return null;
+  }
+
+  if (!dbState.connected) {
+    throw new AppError('Database is not configured. Login and history are unavailable.', 503, 'DATABASE_UNAVAILABLE');
   }
 
   if (scheme !== 'Bearer') {
@@ -42,6 +47,10 @@ export async function optionalAuth(req, _res, next) {
 
 export async function requireAuth(req, _res, next) {
   try {
+    if (!dbState.connected) {
+      throw new AppError('Database is not configured. Login and history are unavailable.', 503, 'DATABASE_UNAVAILABLE');
+    }
+
     const user = await attachUserFromToken(req);
     if (!user) {
       throw new AppError('Authentication is required.', 401, 'AUTH_REQUIRED');
